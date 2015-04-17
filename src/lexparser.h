@@ -70,7 +70,6 @@ namespace CS {
 
             TokenList Scan(const string& s);
             TokenList Scan(const char* s);
-            TokenList Scan(std::istream& in);
             
         private:
             enum State { START, NUMBER, PUNCT, LETTER, DONE };

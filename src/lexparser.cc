@@ -7,21 +7,17 @@ LexParser::LexParser() {
 }
 
 TokenList LexParser::Scan(const string& s) {
-    return Scan(std::istringstream(const_cast<string&>(s)));
+    return Scan(s.c_str());
 }
 
 TokenList LexParser::Scan(const char* s) {
-    return Scan(string(s));
-}
-
-TokenList LexParser::Scan(std::istream& in) {
     TokenList tokens;
     string token;
     State state = START;
     char ch;
 
-    while (!in.eof()) {
-        ch = in.get();
+    while (*s != '\0') {
+        ch = *s++;
     begin:
         switch (state) {
             case START:
