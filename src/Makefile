@@ -1,17 +1,17 @@
 cpp = clang++
 CPPFLAGS = -std=c++11
 
-OBJS = lexparser.o
 TARGET = cs
-TESTS = test-lexparser.o
+TESTSTARGET = test
 
 all: $(OBJS)
 	$(cpp) $(CPPFLAGS) -o $(TARGET) $(OBJS)
 
 test: all $(TESTS)
-	$(cpp) -o test $(CPPFLAGS) $(TESTS)
-	./test
+	$(cpp) -o $(TESTTARGET) $(CPPFLAGS) $(TESTS)
+	./$(TESTTARGET)
 
 clean:
 	rm ./*.o
 	rm ./$(TARGET)
+	rm ./$(TESTTARGET)
