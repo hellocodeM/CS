@@ -1,2 +1,2 @@
 # CS
-A toy version cpp shell.
+A toy version shell, using c++ syntax.
