@@ -1,9 +1,11 @@
-#include "lexparser.hpp"
+#include "scanner.hpp"
 #include <cassert>
+#include <iostream>
 
 
-void TestLexparser() {
-    CS::LexParser scanner;
+void TestScanner() {
+    std::cout << "scanner test:" << std::endl;
+    CS::Scanner scanner;
     const char* code = "int a = 5\na = 1 + 1\nprintln(a)\n";
     CS::TokenList token_list = scanner.Scan(code);
     for (auto &i : token_list) {
@@ -13,6 +15,6 @@ void TestLexparser() {
 
 int main()
 {
-    TestLexparser();
+    TestScanner();
     return 0;
 }

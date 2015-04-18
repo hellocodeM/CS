@@ -7,8 +7,8 @@
 #include <iostream>
 
 namespace CS {
-
     using std::string;
+
     typedef std::vector<std::pair<string, int>> TokenList;
     typedef std::map<string, int> TokenMap;
 
@@ -57,10 +57,10 @@ namespace CS {
         return literals;
     }
 
-    class LexParser {
+    class Scanner {
             enum State { START, NUMBER, PUNCT, LETTER, DONE };
         public:
-            LexParser() {}
+            Scanner() {}
 
 
             TokenList Scan(const string& s) {
@@ -147,6 +147,10 @@ namespace CS {
                 return kKeywords().find(token) != kKeywords().end();
             }
 
+            bool IsType(const string& token) const {
+                return kTypes().find(token) != kTypes().end();
+            }
+
             int IdentifyToken(const string& token) const {
                 if (IsOperator(token))
                     return kOperators()[token];
@@ -155,7 +159,10 @@ namespace CS {
                 else if (IsLetter(token)) {
                     if (IsKeyword(token))
                         return kKeywords()[token];
-                    return kLiterals()["identifier_type"];
+                    else if (IsType(token))
+                        return kTypes()[token];
+                    else
+                        return kLiterals()["identifier_type"];
                 } else {
                     std::cerr << "unidentified token " << token << std::endl;
                     exit(1);
