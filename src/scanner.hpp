@@ -63,11 +63,11 @@ namespace CS {
             Scanner() {}
 
 
-            TokenList Scan(const string& s) {
+            static TokenList Scan(const string& s) {
                 return Scan(s.c_str());
             }
 
-            TokenList Scan(const char* s) {
+            static TokenList Scan(const char* s) {
                 TokenList tokens;
                 string token;
                 State state = START;
@@ -128,30 +128,30 @@ namespace CS {
                 token.clear();
             }
 
-            bool IsOperator(const string& token) const {
+            static bool IsOperator(const string& token) const {
                 return kOperators().find(token) != kOperators().end();
             }
 
-            bool IsNumber(const string& token) const {
+            static bool IsNumber(const string& token) const {
                 return !token.empty() && 
                     std::all_of(token.begin(), token.end(), isdigit);
             }
 
-            bool IsLetter(const string& token) const {
+            static bool IsLetter(const string& token) const {
                 return !token.empty() &&
                     isalpha(token.front()) &&
                     std::all_of(token.begin(), token.end(), isalnum);
             }
 
-            bool IsKeyword(const string& token) const {
+            static bool IsKeyword(const string& token) const {
                 return kKeywords().find(token) != kKeywords().end();
             }
 
-            bool IsType(const string& token) const {
+            static bool IsType(const string& token) const {
                 return kTypes().find(token) != kTypes().end();
             }
 
-            int IdentifyToken(const string& token) const {
+            static int IdentifyToken(const string& token) const {
                 if (IsOperator(token))
                     return kOperators()[token];
                 else if (IsNumber(token))
