@@ -32,7 +32,8 @@ namespace CS {
             { "!=", 16 },
             { "\"", 17 },
             { "(", 18 },
-            { ")", 19 }
+            { ")", 19 },
+            { ";", 20 }
         };
         return operators;
     }
@@ -52,7 +53,8 @@ namespace CS {
         static TokenMap literals = {
             { "number_type", 51 },
             { "string_type", 52 },
-            { "identifier_type", 53 }
+            { "identifier_type", 53 },
+            { "call_type", 54 }
         };
         return literals;
     }
