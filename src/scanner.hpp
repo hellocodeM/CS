@@ -9,7 +9,8 @@
 namespace CS {
     using std::string;
 
-    typedef std::vector<std::pair<string, int>> TokenList;
+    typedef std::pair<string, int> TokenPair;
+    typedef std::vector<TokenPair> TokenList;
     typedef std::map<string, int> TokenMap;
 
     TokenMap& kTypes() {
@@ -123,37 +124,37 @@ namespace CS {
                 return tokens;
             }
 
-            void Restart(State& state, string& token, TokenList& tokens) {
+            static void Restart(State& state, string& token, TokenList& tokens) {
                 state = START;
                 int type_id = IdentifyToken(token);
                 tokens.emplace_back(token, type_id);
                 token.clear();
             }
 
-            static bool IsOperator(const string& token) const {
+            static bool IsOperator(const string& token) {
                 return kOperators().find(token) != kOperators().end();
             }
 
-            static bool IsNumber(const string& token) const {
+            static bool IsNumber(const string& token) {
                 return !token.empty() && 
                     std::all_of(token.begin(), token.end(), isdigit);
             }
 
-            static bool IsLetter(const string& token) const {
+            static bool IsLetter(const string& token) {
                 return !token.empty() &&
                     isalpha(token.front()) &&
                     std::all_of(token.begin(), token.end(), isalnum);
             }
 
-            static bool IsKeyword(const string& token) const {
+            static bool IsKeyword(const string& token) {
                 return kKeywords().find(token) != kKeywords().end();
             }
 
-            static bool IsType(const string& token) const {
+            static bool IsType(const string& token) {
                 return kTypes().find(token) != kTypes().end();
             }
 
-            static int IdentifyToken(const string& token) const {
+            static int IdentifyToken(const string& token) {
                 if (IsOperator(token))
                     return kOperators()[token];
                 else if (IsNumber(token))
