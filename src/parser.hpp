@@ -13,382 +13,386 @@ namespace CS {
     class TokenNode;
     typedef TokenNode SyntaxTree;
 
-class TokenNode {
-    public:
-        // constructors 
-        TokenNode(const string& token_value, int token_type):
-            value_(token_value), 
-            type_(token_type),
-            left_(nullptr),
-            right_(nullptr),
-            next_(nullptr) {
-            }
-
-        TokenNode():
-            TokenNode("", 0) {
-            }
-
-
-        TokenNode(const TokenPair& token):
-            TokenNode(token.first, token.second) {
-            }
-
-
-        void PushLeft(TokenNode* node) {
-            left_ = node;
-        }
-
-        void PushRight(TokenNode* node) {
-            right_ = node;
-        }
-
-        void PushNext(TokenNode* node) {
-            next_ = node;
-        }
-
-        ~TokenNode() {
-            if (left_)
-                left_->~TokenNode();
-            if (right_)
-                right_->~TokenNode();
-            delete left_;
-            delete right_;
-        }
-
-        string value_;
-        int type_;
-        TokenNode* left_;
-        TokenNode* right_;
-        TokenNode* next_;
-};
-
-class Parser {
-
-    public:
-        // trivial constructor
-        Parser(): token_list_(), token_parsed_(0) {}
-
-        SyntaxTree* Parse(const TokenList& token_list) {
-            token_list_ = token_list;
-            token_parsed_ = 0;
-            SyntaxTree* root = new SyntaxTree();
-            SyntaxTree* cursor = root;
-
-            while (HasNext()) {
-                int position = Position();
-                if (IsStatement(position)) {
-                    cursor->PushNext(Statement());
-                } else if (IsAssignment(position)) {
-                    cursor->PushNext(Assignment());
-                } else {
-                    cursor->PushNext(Expression());
+    class TokenNode {
+        public:
+            // constructors 
+            TokenNode(const string& token_value, int token_type):
+                value_(token_value), 
+                type_(token_type),
+                left_(nullptr),
+                right_(nullptr),
+                next_(nullptr) {
                 }
-                SkipToken(";");
-                cursor = cursor->next_;
+
+            TokenNode():
+                TokenNode("", 0) {
+                }
+
+
+            TokenNode(const TokenPair& token):
+                TokenNode(token.first, token.second) {
+                }
+
+
+            void PushLeft(TokenNode* node) {
+                left_ = node;
             }
-            return root;
-        }
 
-    private:
-        // helper functions
-        
-        // does not need position, so these functions could be called through a single token without position
-        bool IsOperator(int index) {
-            return IsOperator(GetToken(index));
-        }
+            void PushRight(TokenNode* node) {
+                right_ = node;
+            }
 
-        bool IsOperator(const TokenPair& token) {
-            return Scanner::IsOperator(token.first);
-        }
+            void PushNext(TokenNode* node) {
+                next_ = node;
+            }
 
-        bool IsBinaryOperator(int index) {
-            return IsBinaryOperator(GetToken(index));
-        }
+            void PushFront(TokenNode* node) {
+                if (this->next_ == nullptr) {
+                    this->next_ = node;
+                } else {
+                    node->next_ = this->next_;
+                    this->next_ = node;
+                }
+            }
 
-        bool IsBinaryOperator(const TokenPair& token) {
-            return IsOperator(token) &&
-                token.first != "\"" &&
-                token.first != ";";
-        }
+            ~TokenNode() {
+                if (left_)
+                    left_->~TokenNode();
+                if (right_)
+                    right_->~TokenNode();
+                delete left_;
+                delete right_;
+            }
 
-        bool IsNumber(int index) {
-            return IsNumber(GetToken(index));
-        }
+            string value_;
+            int type_;
+            TokenNode* left_;
+            TokenNode* right_;
+            TokenNode* next_;
+    };
 
-        bool IsNumber(const TokenPair& token){
-            return token.second == 51;
-        }
+    class Parser {
 
-        bool IsIdentifier(int index) {
-            return IsIdentifier(GetToken(index));
-        }
+        public:
+            // trivial constructor
+            Parser() {}
 
-        bool IsIdentifier(const TokenPair& token) {
-            return token.second == 53;
-        }
-        // need the help of position
-        bool IsStatement(int index) {
-            auto& token = GetToken(index);
-            return token.second < 10 &&
+            SyntaxTree* Parse(TokenList& token_list) {
+                token_list_ = &token_list;
+                token_parsed_ = 0;
+                SyntaxTree root;
+                TokenNode* cursor = &root;
+
+                while (HasNext()) {
+                    int position = Position();
+                    if (IsStatement(position)) {
+                        cursor->PushNext(Statement());
+                    } else if (IsAssignment(position)) {
+                        cursor->PushNext(Assignment());
+                    } else {
+                        cursor->PushNext(Expression());
+                    }
+                    SkipToken(";");
+                    cursor = cursor->next_;
+                }
+                return root.next_;
+            }
+
+        private:
+            // helper functions
+
+            // does not need position, so these functions could be called through a single token without position
+            inline bool IsOperator(int index) {
+                return IsOperator(GetToken(index));
+            }
+
+            inline bool IsOperator(const TokenPair& token) {
+                return Scanner::IsOperator(token.first);
+            }
+
+            inline bool IsOperator(const string& value) {
+                return Scanner::IsOperator(value);
+            }
+
+            inline bool IsBinaryOperator(int index) {
+                return IsBinaryOperator(GetToken(index));
+            }
+
+            inline bool IsBinaryOperator(const TokenPair& token) {
+                return IsOperator(token) &&
+                    token.first != "\"" &&
+                    token.first != ";";
+            }
+
+            inline bool IsBinaryOperator(const string& value) {
+                return Scanner::IsOperator(value) &&
+                    value != "\"" &&
+                    value != ";";
+            }
+
+            inline bool IsNumber(int index) {
+                return IsNumber(GetToken(index));
+            }
+
+            inline bool IsNumber(const TokenPair& token){
+                return token.second == 51;
+            }
+
+            inline bool IsIdentifier(int index) {
+                return IsIdentifier(GetToken(index));
+            }
+
+            inline bool IsIdentifier(const TokenPair& token) {
+                return token.second == 53;
+            }
+            // need the help of position
+            bool IsStatement(int index) {
+                auto& token = GetToken(index);
+                return token.second < 10 &&
                     HasNext(index) &&
                     IsIdentifier(index+1);
-        }
+            }
 
-        bool IsAssignment(int index) {
-            auto& token = GetToken(index);
-            return IsIdentifier(index) &&
+            bool IsAssignment(int index) {
+                auto& token = GetToken(index);
+                return IsIdentifier(index) &&
                     HasNext(index) &&
                     NextToken(index).first == "=";
-        }
+            }
 
-        bool IsCall(int index) {
-            auto& token = GetToken(index);
-            return IsIdentifier(index) &&
+            bool IsCall(int index) {
+                auto& token = GetToken(index);
+                return IsIdentifier(index) &&
                     HasNext(index) &&
                     NextToken(index).first == "(";
-        }
+            }
 
-        bool IsValue(int index) {
-            auto& token = GetToken(index);
-            return (token.first == "(" && 
-                    HasNext(index) &&
-                    IsValue(index+1)) ||
+            bool IsValue(int index) {
+                auto& token = GetToken(index);
+                return (token.first == "(" && 
+                        HasNext(index) &&
+                        IsValue(index+1)) ||
                     IsNumber(index) ||
                     IsIdentifier(index) ||
                     IsCall(index);
-        }
-
-        // control the token list
-        inline void Next() {
-            ++token_parsed_;
-        }
-
-        inline void Prev() {
-            --token_parsed_;
-        }
-
-        inline int Position() {
-            return token_parsed_;
-        }
-
-        inline pair<string, int>& NextToken() {
-            return token_list_[token_parsed_+1];
-        }
-
-        inline pair<string, int>& NextToken(int index) {
-            return token_list_[index+1];
-        }
-
-        inline pair<string, int>& Consume() {
-            return token_list_[token_parsed_++];
-        }
-
-        inline pair<string, int>& GetToken() {
-            return token_list_[token_parsed_];
-        }
-
-        inline pair<string, int>& GetToken(int index) {
-            return token_list_[index];
-        }
-
-        inline bool HasNext() {
-            return token_parsed_ < token_list_.size();
-        }
-
-        inline bool HasNext(int index) {
-            return index < token_list_.size();
-        }
-
-        void SkipToken(const char* token) {
-            assert(Consume().first == token);
-        }
-
-        // operator priority
-
-        int Priority(char ch) {
-            switch (ch) {
-                case '+':
-                case '-':
-                    return 1;
-                case '*':
-                case '/':
-                case '%':
-                    return 2;
-                case '(':
-                    return 3;
-                default:
-                    assert(false);
             }
-        }
 
-        // main force
+            // control the token list
+            inline void Next() {
+                ++token_parsed_;
+            }
 
-        SyntaxTree* Statement() {
-            SyntaxTree* type = new SyntaxTree(Consume());
-            TokenNode* id = new SyntaxTree(Consume());
-            type->PushLeft(id);
-            return type;
-        }
+            inline void Prev() {
+                --token_parsed_;
+            }
 
-        SyntaxTree* Assignment() {
-            SyntaxTree* id = new SyntaxTree(Consume());
-            TokenNode* equal = new SyntaxTree(Consume());
-            TokenNode* expr = Expression();
-            equal->PushLeft(id);
-            equal->PushRight(expr);
-            return equal;
-        }
+            inline int Position() {
+                return token_parsed_;
+            }
 
-        SyntaxTree* Call() {
-            SyntaxTree* call = new SyntaxTree("", kLiterals()["call_type"]);
-            TokenNode* fun = new SyntaxTree(Consume());
-            SkipToken("(");
-            TokenNode* arg = Expression();
-            SkipToken(")");
-            call->PushLeft(fun);
-            call->PushRight(arg);
-            return call;
-        }
-        TokenList Arguments() {
-            TokenList res;
-            enum State { ZERO, ONE, TWO };
-            State state = ZERO;
-            while (HasNext()) {
-                int position = Position();
-                switch (state) {
-                    case ZERO:
-                        if (IsValue(position)) {
-                            auto&& value = Value();
-                            std::copy(value.begin(), value.end(),
-                                        std::back_inserter(res));
-                            state = TWO;
-                        } else {
-                            std::cerr << "not a value" << std::endl;
-                            exit(3);
-                        }
-                        break;
-                    case ONE:
-                        if (GetToken().first == ",") {
-                            res.push_back(Consume());
-                            state = ZERO;
-                        } else {
-                            state = TWO;
-                        }
-                        break;
-                    case TWO:
-                        goto end;
+            inline pair<string, int>& NextToken() {
+                return (*token_list_)[token_parsed_+1];
+            }
+
+            inline pair<string, int>& NextToken(int index) {
+                return (*token_list_)[index+1];
+            }
+
+            inline pair<string, int>& Consume() {
+                return (*token_list_)[token_parsed_++];
+            }
+
+            inline pair<string, int>& GetToken() {
+                return (*token_list_)[token_parsed_];
+            }
+
+            inline pair<string, int>& GetToken(int index) {
+                return (*token_list_)[index];
+            }
+
+            inline bool HasNext() {
+                return token_parsed_ < token_list_->size();
+            }
+
+            inline bool HasNext(int index) {
+                return index < token_list_->size();
+            }
+
+            void SkipToken(const char* token) {
+                assert(Consume().first == token);
+            }
+
+            // operator priority
+
+            int Priority(char ch) {
+                switch (ch) {
+                    case '+':
+                    case '-':
+                        return 1;
+                    case '*':
+                    case '/':
+                    case '%':
+                        return 2;
+                    case '(':
+                        return 3;
                     default:
                         assert(false);
                 }
             }
-            end:
-            return res;
-        }
 
-        TokenList Value() {
-            auto& token = GetToken();
-            TokenList res;
-            if (token.first == "(") {
-                SkipToken("(");
-                res = Value();
-                SkipToken(")");
-            } else {
-                if (IsNumber(Position())) {
-                    res.push_back(Consume());
-                } else if (IsCall(Position())) {
-                    // id
-                    res.push_back(Consume());
-                    // '('
-                    res.push_back(Consume());
-                    // expr
-                    TokenList&& args = Arguments();
-                    std::copy(args.begin(), args.end(),
-                                std::back_inserter(res));
-                    // ')'
-                    res.push_back(Consume());
-                } else if (IsIdentifier(Position())) {
-                    res.push_back(Consume());
-                } else {
-                    std::cerr << "not a value" << std::endl;
-                    exit(3);
-                }
-            }
-            return res;
-        }
+            // main force
 
-        SyntaxTree* Expression() {
-            TokenList tokens;
-            enum State { ZERO, ONE, TWO};
-            State state = ZERO;
-            while (HasNext()) {
-                int position = Position();
-                switch (state) {
-                    case ZERO:
-                        if (IsValue(position)) {
-                            auto value = Value();
-                            std::copy(value.begin(),
-                                        value.end(),
-                                        std::back_inserter(tokens));
-                        } else {
-                            std::cerr << "not a value:\t\'" << GetToken(position).first << "\'"<< std::endl;
-                            exit(2);
-                        }
-                        state = ONE;
-                        break;
-                    case ONE:
-                        if (IsBinaryOperator(position)) {
-                            tokens.push_back(Consume());
-                            state = ZERO;
-                        } else {
-                            state = TWO;
-                        }
-                        break;
-                    case TWO:
-                        goto end;
-                    default:
-                        assert(false);
-                }
+            SyntaxTree* Statement() {
+                SyntaxTree* type = new SyntaxTree(Consume());
+                TokenNode* id = new SyntaxTree(Consume());
+                type->PushLeft(id);
+                return type;
             }
-            end:
-            // convert it to postfix
-            TokenList postfix;
-            std::stack<TokenPair> operators;
-            for (auto& i : tokens) {
-                char ch = i.first.front();
-                if (IsBinaryOperator(i)) {
-                    while (!operators.empty() && operators.top().first != "(" &&
-                            Priority(ch) <= Priority(operators.top().first.front())) {
-                        postfix.push_back(operators.top()), operators.pop();
+
+            SyntaxTree* Assignment() {
+                SyntaxTree* id = new SyntaxTree(Consume());
+                TokenNode* equal = new SyntaxTree(Consume());
+                TokenNode* expr = Expression();
+                equal->PushLeft(id);
+                equal->PushRight(expr);
+                return equal;
+            }
+
+            TokenNode* Arguments() {
+                TokenNode* root = nullptr;
+                enum State { ZERO, ONE, TWO };
+                State state = ZERO;
+                while (HasNext() && state != TWO) {
+                    int position = Position();
+                    switch (state) {
+                        case ZERO:
+                            if (IsValue(position)) {
+                                if (root == nullptr)
+                                    root = Value();
+                                else
+                                    root->PushFront(Value());
+                                state = TWO;
+                            } else {
+                                std::cerr << "not a value" << std::endl;
+                                exit(3);
+                            }
+                            break;
+                        case ONE:
+                            if (GetToken().first == ",") {
+                                SkipToken(",");
+                                state = ZERO;
+                            } else {
+                                state = TWO;
+                            }
+                            break;
+                        case TWO:
+                            goto end;
+                        default:
+                            assert(false);
                     }
-                    operators.push(i);
-                } else {
-                    postfix.push_back(i);
                 }
+                end:
+                return root;
             }
-            while (!operators.empty()) 
-                postfix.push_back(operators.top()), operators.pop();
 
-            // construct syntax tree from postfix expression
-            std::stack<TokenNode*> node_stack;
-            for (auto &i : postfix) {
-                TokenNode* node = new TokenNode(i);
-                if (IsOperator(i)) {
-                    TokenNode* rhs = node_stack.top(); 
-                    node_stack.pop();
-                    TokenNode* lhs = node_stack.top();
-                    node_stack.pop();
-                    node->PushLeft(lhs);
-                    node->PushRight(rhs);
-                    node_stack.push(node);
+            TokenNode* Value() {
+                auto& token = GetToken();
+                TokenNode* node;
+                if (token.first == "(") {
+                    SkipToken("(");
+                    node = Value();
+                    SkipToken(")");
                 } else {
-                    node_stack.push(node);
+                    if (IsNumber(Position())) {
+                        node = new TokenNode(Consume());
+                    } else if (IsCall(Position())) {
+                        node = new TokenNode;
+                        node->type_ = kLiterals()["call_type"];
+                        // function identifier
+                        node->PushLeft(new TokenNode(Consume()));
+                        // '('
+                        SkipToken("(");
+                        // expr
+                        node->PushRight(Arguments());
+                        // ')'
+                        SkipToken(")");
+                    } else if (IsIdentifier(Position())) {
+                        node = new TokenNode(Consume());
+                    } else {
+                        std::cerr << "not a value" << std::endl;
+                        exit(3);
+                    }
                 }
+                return node;
             }
-            return node_stack.top();
-        }
 
-        TokenList token_list_;
-        int token_parsed_;
-};
+            SyntaxTree* Expression() {
+                std::vector<TokenNode*> tokens;
+                enum State { ZERO, ONE, TWO};
+                State state = ZERO;
+                while (HasNext() && state != TWO) {
+                    int position = Position();
+                    switch (state) {
+                        case ZERO:
+                            if (IsValue(position)) {
+                                tokens.push_back(Value());
+                            } else {
+                                std::cerr << "not a value:\t\'" << GetToken(position).first << "\'"<< std::endl;
+                                exit(2);
+                            }
+                            state = ONE;
+                            break;
+                        case ONE:
+                            if (IsBinaryOperator(position)) {
+                                tokens.push_back(new TokenNode(Consume()));
+                                state = ZERO;
+                            } else {
+                                state = TWO;
+                            }
+                            break;
+                        case TWO:
+                        default:
+                            assert(false);
+                    }
+                }
+                // convert it to postfix
+                std::vector<TokenNode*> postfix;
+                std::stack<TokenNode*> operators;
+                for (auto node : tokens) {
+                    char ch = node->value_.front();
+                    if (IsBinaryOperator(node->value_)) {
+                        while (!operators.empty() && operators.top()->value_ != "(" &&
+                                Priority(ch) <= Priority(operators.top()->value_.front())) {
+                            postfix.push_back(operators.top()), operators.pop();
+                        }
+                        operators.push(node);
+                    } else {
+                        postfix.push_back(node);
+                    }
+                }
+                while (!operators.empty()) 
+                    postfix.push_back(operators.top()), operators.pop();
+
+                // construct syntax tree from postfix expression
+                std::stack<TokenNode*> node_stack;
+                for (auto &node : postfix) {
+                    if (IsOperator(node->value_)) {
+                        TokenNode* rhs = node_stack.top(); 
+                        node_stack.pop();
+                        TokenNode* lhs = node_stack.top();
+                        node_stack.pop();
+                        node->PushLeft(lhs);
+                        node->PushRight(rhs);
+                        node_stack.push(node);
+                    } else {
+                        node_stack.push(node);
+                    }
+                }
+                return node_stack.top();
+            }
+
+            TokenList* token_list_;
+            int token_parsed_;
+    };
 
 }
