@@ -1,6 +1,9 @@
 #include <stack>
 
+#ifndef SCANNER
+#define SCANNER
 #include "scanner.hpp"
+#endif
 
 namespace CS {
     using std::pair;
@@ -52,19 +55,6 @@ class TokenNode {
             delete right_;
         }
 
-        string& value() {
-            return value_;
-        }
-
-        int type() {
-            return type_;
-        }
-
-        TokenNode* next() {
-            return next_;
-        }
-    private:
-        
         string value_;
         int type_;
         TokenNode* left_;
@@ -85,80 +75,135 @@ class Parser {
             SyntaxTree* cursor = root;
 
             while (HasNext()) {
-                auto cur = GetToken();
-                if (IsStatement(cur)) {
+                int position = Position();
+                if (IsStatement(position)) {
                     cursor->PushNext(Statement());
-                } else if (IsAssignment(cur)) {
+                } else if (IsAssignment(position)) {
                     cursor->PushNext(Assignment());
-                } else if (IsCall(cur)) {
-                    cursor->PushNext(Call());
                 } else {
                     cursor->PushNext(Expression());
                 }
-                cursor = cursor->next();
+                SkipToken(";");
+                cursor = cursor->next_;
             }
             return root;
         }
 
     private:
         // helper functions
+        
+        // does not need position, so these functions could be called through a single token without position
+        bool IsOperator(int index) {
+            return IsOperator(GetToken(index));
+        }
+
         bool IsOperator(const TokenPair& token) {
             return Scanner::IsOperator(token.first);
         }
 
-        bool IsStatement(const TokenPair& token) {
-            return token.second < 10;
-        }
-        
-        bool IsAssignment(const TokenPair& token) {
-            return token.second == 53 &&
-                    HasNext() &&
-                    NextToken().first == "=";
-        }
-
-        bool IsCall(const TokenPair& token) {
-            return token.second == 53 &&
-                    HasNext() &&
-                    NextToken().first == "(";
+        bool IsBinaryOperator(int index) {
+            return IsBinaryOperator(GetToken(index));
         }
 
         bool IsBinaryOperator(const TokenPair& token) {
             return IsOperator(token) &&
-                token.first != ";" &&
-                token.first != "\"";
+                token.first != "\"" &&
+                token.first != ";";
         }
 
-        void Next() {
+        bool IsNumber(int index) {
+            return IsNumber(GetToken(index));
+        }
+
+        bool IsNumber(const TokenPair& token){
+            return token.second == 51;
+        }
+
+        bool IsIdentifier(int index) {
+            return IsIdentifier(GetToken(index));
+        }
+
+        bool IsIdentifier(const TokenPair& token) {
+            return token.second == 53;
+        }
+        // need the help of position
+        bool IsStatement(int index) {
+            auto& token = GetToken(index);
+            return token.second < 10 &&
+                    HasNext(index) &&
+                    IsIdentifier(index+1);
+        }
+
+        bool IsAssignment(int index) {
+            auto& token = GetToken(index);
+            return IsIdentifier(index) &&
+                    HasNext(index) &&
+                    NextToken(index).first == "=";
+        }
+
+        bool IsCall(int index) {
+            auto& token = GetToken(index);
+            return IsIdentifier(index) &&
+                    HasNext(index) &&
+                    NextToken(index).first == "(";
+        }
+
+        bool IsValue(int index) {
+            auto& token = GetToken(index);
+            return (token.first == "(" && 
+                    HasNext(index) &&
+                    IsValue(index+1)) ||
+                    IsNumber(index) ||
+                    IsIdentifier(index) ||
+                    IsCall(index);
+        }
+
+        // control the token list
+        inline void Next() {
             ++token_parsed_;
         }
 
-        void Prev() {
+        inline void Prev() {
             --token_parsed_;
         }
 
-        pair<string, int>& NextToken() {
+        inline int Position() {
+            return token_parsed_;
+        }
+
+        inline pair<string, int>& NextToken() {
             return token_list_[token_parsed_+1];
         }
 
-        pair<string, int>& Consume() {
+        inline pair<string, int>& NextToken(int index) {
+            return token_list_[index+1];
+        }
+
+        inline pair<string, int>& Consume() {
             return token_list_[token_parsed_++];
         }
 
-        pair<string, int>& GetToken() {
+        inline pair<string, int>& GetToken() {
             return token_list_[token_parsed_];
         }
 
-        pair<string, int>& GetNext() {
-            return token_list_[token_parsed_+1];
+        inline pair<string, int>& GetToken(int index) {
+            return token_list_[index];
         }
 
         inline bool HasNext() {
             return token_parsed_ < token_list_.size();
         }
 
+        inline bool HasNext(int index) {
+            return index < token_list_.size();
+        }
+
         void SkipToken(const char* token) {
             assert(Consume().first == token);
         }
+
+        // operator priority
 
         int Priority(char ch) {
             switch (ch) {
@@ -175,11 +220,12 @@ class Parser {
                     assert(false);
             }
         }
+
         // main force
+
         SyntaxTree* Statement() {
             SyntaxTree* type = new SyntaxTree(Consume());
             TokenNode* id = new SyntaxTree(Consume());
-            SkipToken(";");
             type->PushLeft(id);
             return type;
         }
@@ -188,7 +234,6 @@ class Parser {
             SyntaxTree* id = new SyntaxTree(Consume());
             TokenNode* equal = new SyntaxTree(Consume());
             TokenNode* expr = Expression();
-            SkipToken(";");
             equal->PushLeft(id);
             equal->PushRight(expr);
             return equal;
@@ -204,14 +249,107 @@ class Parser {
             call->PushRight(arg);
             return call;
         }
+        TokenList Arguments() {
+            TokenList res;
+            enum State { ZERO, ONE, TWO };
+            State state = ZERO;
+            while (HasNext()) {
+                int position = Position();
+                switch (state) {
+                    case ZERO:
+                        if (IsValue(position)) {
+                            auto&& value = Value();
+                            std::copy(value.begin(), value.end(),
+                                        std::back_inserter(res));
+                            state = TWO;
+                        } else {
+                            std::cerr << "not a value" << std::endl;
+                            exit(3);
+                        }
+                        break;
+                    case ONE:
+                        if (GetToken().first == ",") {
+                            res.push_back(Consume());
+                            state = ZERO;
+                        } else {
+                            state = TWO;
+                        }
+                        break;
+                    case TWO:
+                        goto end;
+                    default:
+                        assert(false);
+                }
+            }
+            end:
+            return res;
+        }
+
+        TokenList Value() {
+            auto& token = GetToken();
+            TokenList res;
+            if (token.first == "(") {
+                SkipToken("(");
+                res = Value();
+                SkipToken(")");
+            } else {
+                if (IsNumber(Position())) {
+                    res.push_back(Consume());
+                } else if (IsCall(Position())) {
+                    // id
+                    res.push_back(Consume());
+                    // '('
+                    res.push_back(Consume());
+                    // expr
+                    TokenList&& args = Arguments();
+                    std::copy(args.begin(), args.end(),
+                                std::back_inserter(res));
+                    // ')'
+                    res.push_back(Consume());
+                } else if (IsIdentifier(Position())) {
+                    res.push_back(Consume());
+                } else {
+                    std::cerr << "not a value" << std::endl;
+                    exit(3);
+                }
+            }
+            return res;
+        }
 
         SyntaxTree* Expression() {
-            SyntaxTree* expr = new SyntaxTree();
             TokenList tokens;
-            while (HasNext() && IsBinaryOperator(NextToken())) {
-                Next();
-                tokens.push_back(GetToken());
+            enum State { ZERO, ONE, TWO};
+            State state = ZERO;
+            while (HasNext()) {
+                int position = Position();
+                switch (state) {
+                    case ZERO:
+                        if (IsValue(position)) {
+                            auto value = Value();
+                            std::copy(value.begin(),
+                                        value.end(),
+                                        std::back_inserter(tokens));
+                        } else {
+                            std::cerr << "not a value:\t\'" << GetToken(position).first << "\'"<< std::endl;
+                            exit(2);
+                        }
+                        state = ONE;
+                        break;
+                    case ONE:
+                        if (IsBinaryOperator(position)) {
+                            tokens.push_back(Consume());
+                            state = ZERO;
+                        } else {
+                            state = TWO;
+                        }
+                        break;
+                    case TWO:
+                        goto end;
+                    default:
+                        assert(false);
+                }
             }
+            end:
             // convert it to postfix
             TokenList postfix;
             std::stack<TokenPair> operators;
@@ -230,9 +368,9 @@ class Parser {
             while (!operators.empty()) 
                 postfix.push_back(operators.top()), operators.pop();
 
-            // construct syntax tree
+            // construct syntax tree from postfix expression
             std::stack<TokenNode*> node_stack;
-            for (auto &i : tokens) {
+            for (auto &i : postfix) {
                 TokenNode* node = new TokenNode(i);
                 if (IsOperator(i)) {
                     TokenNode* rhs = node_stack.top(); 

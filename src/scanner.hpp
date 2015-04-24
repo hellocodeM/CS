@@ -100,7 +100,8 @@ namespace CS {
                             }
                             break;
                         case PUNCT:
-                            if (ispunct(ch)) {
+                            // avoid this condition: println("hello");
+                            if (ch != ';' && ispunct(ch)) {
                                 token += ch;
                             } else {
                                 Restart(state, token, tokens);
@@ -167,7 +168,7 @@ namespace CS {
                     else
                         return kLiterals()["identifier_type"];
                 } else {
-                    std::cerr << "unidentified token " << token << std::endl;
+                    std::cerr << "undefined token " << token << std::endl;
                     exit(1);
                 }
 
