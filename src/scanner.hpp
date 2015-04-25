@@ -17,7 +17,8 @@ namespace CS {
         static TokenMap types = {
             { "int", 1 },
             { "void", 2 },
-            { "double", 3}
+            { "double", 3},
+            { "pointer", 4 }
         };
         return types;
     }
