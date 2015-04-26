@@ -81,5 +81,6 @@ int main()
     TestParser();
     //TestVariable();
     TestEvaluator();
+    printf("passed all test!\n");
     return 0;
 }

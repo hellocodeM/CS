@@ -1,17 +1,16 @@
 cpp = clang++
 CPPFLAGS = -std=c++11
 
-TARGET = cs
-TESTSTARGET = test
+TARGET = CS
+TESTTARGET = test
 
 all: $(OBJS)
-	$(cpp) $(CPPFLAGS) -o $(TARGET) $(OBJS)
+	$(cpp) $(CPPFLAGS) CS.cc -o $(TARGET) 
 
-test: all $(TESTS)
-	$(cpp) -o $(TESTTARGET) $(CPPFLAGS) $(TESTS)
+test: all
+	$(cpp) $(CPPFLAGS) test.cc -o $(TESTTARGET)
 	./$(TESTTARGET)
 
 clean:
-	rm ./*.o
 	rm ./$(TARGET)
 	rm ./$(TESTTARGET)
