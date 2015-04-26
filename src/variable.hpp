@@ -11,11 +11,10 @@ union Value {
     double d;
     void* p;
 
+    Value() {}
     Value(int ii): i(ii) {}
     Value(double dd): d(dd) {}
     Value(void* pp): p(pp) {}
-    private:
-        Value();
 };
 
 class Variable {
@@ -23,10 +22,7 @@ class Variable {
 
     /* constructor family */
 
-    private:
-        Variable();
-
-    public:
+    Variable(): self(*this) {}
 
     Variable(Value& vv, int type_id_):
         v(vv), type_id(type_id_), self(*this) {
@@ -43,6 +39,23 @@ class Variable {
     Variable(void* p):
         v(p), type_id(GetId("pointer")), self(*this) {
         }
+
+    // construct from TokenNode::value_ and TokenNode::type_
+
+    Variable(const string& value, int type):
+        self(*this) {
+        type_id = type;
+        switch (type) {
+            case 1:
+                v.i = std::stoi(value);
+                break;
+            case 2:
+                v.d = std::stod(value);
+                break;
+            default:
+                assert(false);
+        }
+    }
 
     Variable(const Variable& variable):
         v(variable.v), type_id(variable.type_id), self(*this) {
@@ -76,7 +89,6 @@ class Variable {
 
     void IllegalOperation(const char* message) const {
         printf("invalid operation: %s\n", message);
-        exit(5);
     }
 
     Variable operator + (const Variable& rhs) {
@@ -86,6 +98,7 @@ class Variable {
             return Variable(GetAny() + rhs.GetAny());
         } else {
             IllegalOperation("plus a number and a pointer");
+            exit(5);
         }
     }
 
@@ -96,6 +109,7 @@ class Variable {
             return Variable(GetAny() - rhs.GetAny());
         } else {
             IllegalOperation("minus a number and a pointer");
+            exit(5);
         }
     }
 
@@ -106,6 +120,7 @@ class Variable {
             return Variable(GetAny() * rhs.GetAny());
         } else {
             IllegalOperation("multiply a number and a pointer");
+            exit(5);
         }
 
     }
@@ -117,6 +132,7 @@ class Variable {
             return Variable(GetAny() / rhs.GetAny());
         } else {
             IllegalOperation("devide a number and a pointer");
+            exit(5);
         }
 
     }
@@ -134,9 +150,9 @@ class Variable {
         }
     }
     
+    Value v;
+    int type_id;
     private:
-        Value v;
-        int type_id;
         Variable& self;
 };
 

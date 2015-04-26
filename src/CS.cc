@@ -30,13 +30,14 @@ string Helpers(int cmd) {
 
 int main()
 {
+    //freopen("in.data", "r", stdin);
     Evaluator evaluator;
     std::cout << "Welcome to CS!" << std::endl;
     for (std::string line; ;) {
-        std::cout << "CS:";
-        std::cin >> line;
+        std::cout << "CS: ";
+        if (!std::getline(std::cin, line)) break;
         if (CMD(line) == 0)
-            std::cout << evaluator.Evaluate(line) << std::endl;
+            std::cout << evaluator.Evaluate(line + "\n") << std::endl;
         else 
             std::cout << Helpers(CMD(line)) << std::endl;
     }

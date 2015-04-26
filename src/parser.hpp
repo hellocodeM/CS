@@ -6,6 +6,8 @@
 #include "scanner.hpp"
 #endif
 
+#include "util.hpp"
+
 namespace CS {
     using std::pair;
     using std::string;
@@ -136,7 +138,8 @@ namespace CS {
             }
 
             inline bool IsNumber(const TokenPair& token){
-                return token.second == 51;
+                return token.second == GetId("int") ||
+                        token.second == GetId("double");
             }
 
             inline bool IsIdentifier(int index) {
@@ -149,7 +152,8 @@ namespace CS {
             // need the help of position
             bool IsStatement(int index) {
                 auto& token = GetToken(index);
-                return token.second < 10 &&
+                return (token.second == 36 ||
+                        token.second == 37) &&
                     HasNext(index) &&
                     IsIdentifier(index+1);
             }
@@ -308,7 +312,7 @@ namespace CS {
                         node = new TokenNode(Consume());
                     } else if (IsCall(Position())) {
                         node = new TokenNode;
-                        node->type_ = kLiterals()["call_type"];
+                        node->type_ = GetId("call_type");
                         // function identifier
                         node->PushLeft(new TokenNode(Consume()));
                         // '('

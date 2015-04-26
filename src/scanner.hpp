@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <unordered_map>
 
 #define SCANNER_H
 
@@ -13,7 +14,7 @@ namespace CS {
 
     typedef std::pair<string, int> TokenPair;
     typedef std::vector<TokenPair> TokenList;
-    typedef std::map<string, int> TokenMap;
+    typedef std::unordered_map<string, int> TokenMap;
 
     TokenMap& kTypes() {
         static TokenMap types = {
@@ -47,7 +48,9 @@ namespace CS {
             { "if", 32 },
             { "else", 33 },
             { "while", 34 },
-            { "for", 35 }
+            { "for", 35 },
+            { "int", 36 },
+            { "double", 37}
         };
         return keywords;
     }
@@ -143,6 +146,10 @@ namespace CS {
                     std::all_of(token.begin(), token.end(), isdigit);
             }
 
+            static bool IsDouble(const string& token) {
+                return token.find('.') != token.npos;
+            }
+
             static bool IsLetter(const string& token) {
                 return !token.empty() &&
                     isalpha(token.front()) &&
@@ -160,8 +167,12 @@ namespace CS {
             static int IdentifyToken(const string& token) {
                 if (IsOperator(token))
                     return kOperators()[token];
-                else if (IsNumber(token))
-                    return kLiterals()["number_type"];
+                else if (IsNumber(token)) {
+                    if (IsDouble(token)) 
+                        return kTypes()["double"];
+                    else
+                        return kTypes()["int"];
+                }
                 else if (IsLetter(token)) {
                     if (IsKeyword(token))
                         return kKeywords()[token];

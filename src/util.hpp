@@ -8,7 +8,7 @@
 
 namespace CS {
 
-    int GetId(const string key) {
+    int GetId(const string& key) {
         return GetId(key.c_str());
     }
 

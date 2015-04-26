@@ -1,17 +1,10 @@
 #include <cassert>
 #include <iostream>
 
-#ifndef SCANNER_H
 #include "scanner.hpp"
-#endif
-
-#ifndef PARSER_H
 #include "parser.hpp"
-#endif
-
-#ifndef VARIABLE_H
 #include "variable.hpp"
-#endif
+#include "evaluator.hpp"
 
 const char* GetSourceCode() {
     const char* code = "int a;\na = 1 + 1;\n println(a);\n";
@@ -19,12 +12,13 @@ const char* GetSourceCode() {
 }
 
 void TestScanner() {
-    std::cout << "scanner test:" << std::endl;
+    printf("scanner test:\n");
     const char* code = GetSourceCode();
     CS::TokenList token_list = CS::Scanner::Scan(code);
     for (auto &i : token_list) {
         std::cout << i.first << " : " << i.second <<std::endl;
     }
+    printf("pass: scanner test\n");
 }
 
 void DumpSyntaxTree(CS::SyntaxTree* root, int interval) {
@@ -33,8 +27,9 @@ void DumpSyntaxTree(CS::SyntaxTree* root, int interval) {
     std::string line = "->";
     if (!root->value_.empty())
         line += root->value_;
-    else if (root->type_ == 54)
+    else if (root->type_ == CS::GetId("call_type"))
         line += "call";
+    line += ":" +std::to_string(root->type_);
     printf("%-10s", line.c_str());
         DumpSyntaxTree(root->left_, 0);
 
@@ -44,15 +39,17 @@ void DumpSyntaxTree(CS::SyntaxTree* root, int interval) {
 }
 
 void TestParser() {
-    std::cout << "parser test:" << std::endl;
+    printf("parser test:\n");
     const char* code = GetSourceCode();
     CS::TokenList token_list = CS::Scanner::Scan(code);
     CS::Parser parser;
     CS::SyntaxTree* syntax_tree = parser.Parse(token_list);
     DumpSyntaxTree(syntax_tree, 0);
+    printf("pass: parser test\n");
 }
 
 void TestVariable() {
+    printf("variable test\n");
     CS::Variable a(1);
     CS::Variable b(1.0);
     CS::Variable c(2);
@@ -66,12 +63,23 @@ void TestVariable() {
     std::cout << (a + c).to_string() << std::endl;
     // int and pointer
     std::cout << (a + p).to_string() << std::endl;
+    printf("pass: variable test\n");
+}
+
+void TestEvaluator() {
+    printf("evaluator test\n");
+    CS::Evaluator eval;
+    std::cout << eval.Evaluate("int a;\n") << std::endl;
+    std::cout << eval.Evaluate("a = 1+1;\n") << std::endl;
+    std::cout << eval.Evaluate("println(a);\n") << std::endl;
+    printf("pass: evaluator test\n");
 }
 
 int main()
 {
-    //TestScanner();
-    //TestParser();
-    TestVariable();
+    TestScanner();
+    TestParser();
+    //TestVariable();
+    TestEvaluator();
     return 0;
 }

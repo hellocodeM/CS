@@ -14,15 +14,26 @@
 #include "variable.hpp"
 #endif
 
-namespace CS {
-    class Block;
-    typedef std::unordered_map<std::string, Variable> Context;
+#ifndef FUNCTION_H
+#include "function.hpp"
+#endif
 
+namespace CS {
+    typedef std::unordered_map<std::string, Variable> Context;
 class Block {
     public:
-        Block(): context_() {}
+        Block(): context_(), up_(nullptr), down_(nullptr) {}
+
+        Block(Block* up, Block* down):
+            up_(up), down_(down) {
+            }
+
 
         Variable& Retrieve(const string& id) {
+            return context_[id];
+        }
+
+        Variable& Retrieve(const char* id) {
             return context_[id];
         }
 
@@ -30,75 +41,93 @@ class Block {
             return context_[id];
         }
 
-    private:
+        Variable& operator[] (const char* id) {
+            return context_[id];
+        }
+
+        /* return a function pointer */
+        FunPtr Load(const string& id) {
+            return fun_table_[id];
+        }
+
         Context context_;
+        FunctionTable fun_table_;
+        Block* up_;
+        Block* down_;
 };
 
 
 class Evaluator {
     public:
-        Evaluator(): scanner_(), parser_() {}
+        Evaluator(): scanner_(), parser_(), global_context_() {
+            InitFunctionTable();
+        }
 
         string Evaluate(const string& code) {
             return Evaluate(code.c_str());
         }
 
         string Evaluate(const char* code) {
-            return "shit";
+            TokenList&& token_list = scanner_.Scan(code);
+            SyntaxTree* tree = parser_.Parse(token_list);
+            return BlockEvaluate(tree, global_context_);
         }
 
     private:
-        string BlockEvaluate(SyntaxTree* tree) {
+
+        void InitFunctionTable() {
+            Function::RegisterFunctions(global_context_.fun_table_);
+        }
+
+        string BlockEvaluate(SyntaxTree* tree, Block& context) {
             if (!tree) return string();
-            while (tree) {
+            
             /* distribute different kind of code */
-                if (tree->type_ < 10) {
-                    /* variable statement */
-                    return Statement(tree);
-                } else if (tree->type_ == 14) {
-                    /* assignment */
-                    return Assignment(tree);
-                } else if (tree->type_ == 54) {
-                    /* function call */
-                    return Call(tree);
-                } else if (tree->type_ == 32) {
-                    /* if block */
-                    return IfBlock(tree);
-                } else if (tree->type_ == 34) {
-                    /* while block */
-                    return WhileBlock(tree);
-                } else if (tree->type_ == 35) {
-                    /* for block */
-                    return ForBlock(tree);
-                } else {
-                    /* error */
-                    std::cerr << "unknown SyntaxTree" << tree->value_ << std::endl;
-                    exit(4);
-                }
-                tree = tree->next_;
+            if (tree->type_ == 36 || tree->type_ == 37 ||
+                    tree->type_ == 38) {
+                /* variable statement */
+                return Statement(tree, context);
+            } else if (tree->type_ == GetId("=")) {
+                /* assignment */
+                return Assignment(tree, context);
+            } else if (tree->type_ == GetId("call_type")) {
+                /* function call */
+                return Call(tree, context);
+            } else if (tree->type_ == GetId("if")) {
+                /* if block */
+                return IfBlock(tree, context);
+            } else if (tree->type_ == GetId("while")) {
+                /* while block */
+                return WhileBlock(tree, context);
+            } else if (tree->type_ == GetId("for")) {
+                /* for block */
+                return ForBlock(tree, context);
+            } else {
+                /* error */
+                std::cerr << "syntax error: " << tree->value_ << std::endl;
+                exit(4);
             }
         }
 
-        string Statement(SyntaxTree* tree) {
+        string Statement(SyntaxTree* tree, Block& context) {
             int type = tree->type_;
             string id = tree->left_->value_;
             string res;
 
-            context_[id].type_id = type;
             switch (type) {
                 /* int */
-                case 1: 
-                    context_[id].v.i = 0;
+                case 36: 
+                    context[id] = Variable(0);
                     res = id + " = 0";
                     break;
                 /* double */
-                case 2:
-                    context_[id].d = 0.0;
+                case 37:
+                    context[id] = Variable(0.0);
                     res = id + " = 0.0";
                     break;
                 /* pointer */
-                case 3:
-                    context_[id].p = nullptr;
+                case 38:
+                    context[id] = Variable(nullptr);
                     res = id + " = nullptr";
                     break;
                 default:
@@ -107,77 +136,80 @@ class Evaluator {
             return res;
         }
 
-        string Assignment(SyntaxTree* tree) {
+        string Assignment(SyntaxTree* tree, Block& context) {
             assert(tree->type_ == 14);
             string id = tree->left_->value_;
             SyntaxTree* expr = tree->right_;
-            Variable value = Expression(expr);
-            context_[id] = value;
-            return id + " = " + value.toString();
+            Variable value = Expression(expr, context);
+            context[id] = value;
+            return id + " = " + value.to_string();
         }
 
-        Variable Expression(SyntaxTree* tree) {
-            Variable res;
-            if (tree->type_ == 51) {
+        Variable Expression(SyntaxTree* tree, Block& context) {
+            if (tree->type_ == GetId("int") ||
+                    tree->type_ == GetId("double")) {
             // current node is a number
-                res.type_id = tree->type_;
-                res.v.d = tree->value_;
+                return Variable(tree->value_, tree->type_);
             } else {
             // or it's a expression
-                res.type_id = tree->left_.type_id;
-                Variable lhs = Expression(tree->left_);
-                Variable rhs = Expression(tree->right_);
+                Variable res(tree->left_->value_, tree->left_->type_);
+                Variable lhs = Expression(tree->left_, context);
+                Variable rhs = Expression(tree->right_, context);
                 switch (tree->type_) {
                     case 10:
-                        res.v = lhs + rhs;
+                        res = lhs + rhs;
                         break;
                     case 11:
-                        res.v = lhs - rhs;
+                        res = lhs - rhs;
                         break;
                     case 12:
-                        res.v = lhs * rhs;
+                        res = lhs * rhs;
                         break;
                     case 13:
-                        res.v = lhs / rhs;
+                        res = lhs / rhs;
                         break;
-                    case 14:
-                        res.v = rhs;
-                        break;
-                    case 15:
-                        res.v = (lhs == rhs);
-                        break;
-                    case 16:
-                        res.v = !(lhs == rhs);
-                        break;
+                    //case 14:
+                    //    res.v = rhs;
+                    //    break;
+                    //case 15:
+                    //    res.v = (lhs == rhs);
+                    //    break;
+                    //case 16:
+                    //    res.v = !(lhs == rhs);
+                    //    break;
                     default:
                         assert(false);
                 }
+                return res;
             }
-            return res;
         }
 
-        string Call(SyntaxTree* tree) {
-            assert(tree->left_->type_ == 54);
+        string Call(SyntaxTree* tree, Block& context) {
+            assert(tree->type_ == GetId("call_type"));
             string fun = tree->left_->value_;
-            
-            
+            FunPtr f = context.Load(fun);
+            f();
+            return "";
         }
 
-        string IfBlock(SyntaxTree* tree) {
+        string IfBlock(SyntaxTree* tree, Block& context) {
             assert(tree->type_ == 32);
+            return "shit";
         }
 
-        string WhileBlock(SyntaxTree* tree) {
+        string WhileBlock(SyntaxTree* tree, Block& context) {
             assert(tree->type_ == 34);
-
+            return "shit";
         }
 
-        string ForBlock(SyntaxTree* tree) {
+        string ForBlock(SyntaxTree* tree, Block& context) {
             assert(tree->type_ == 45);
+            return "shit";
         }
 
         /* members */
         Scanner scanner_;
         Parser parser_;
+        Block global_context_;
 };
 }
