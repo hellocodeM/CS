@@ -37,7 +37,7 @@ int main()
         std::cout << "CS: ";
         if (!std::getline(std::cin, line)) break;
         if (CMD(line) == 0)
-            std::cout << evaluator.Evaluate(line + "\n") << std::endl;
+            std::cout << "res: " << evaluator.Evaluate(line + "\n") << std::endl;
         else 
             std::cout << Helpers(CMD(line)) << std::endl;
     }
