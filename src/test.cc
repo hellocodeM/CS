@@ -1,16 +1,17 @@
 #include <cassert>
 #include <iostream>
 
-#ifndef SCANNER
-#define SCANNER
+#ifndef SCANNER_H
 #include "scanner.hpp"
 #endif
 
-#ifndef PARSER
-#define SCANNER
+#ifndef PARSER_H
 #include "parser.hpp"
 #endif
 
+#ifndef VARIABLE_H
+#include "variable.hpp"
+#endif
 
 const char* GetSourceCode() {
     const char* code = "int a;\na = 1 + 1;\n println(a);\n";
@@ -51,9 +52,26 @@ void TestParser() {
     DumpSyntaxTree(syntax_tree, 0);
 }
 
+void TestVariable() {
+    CS::Variable a(1);
+    CS::Variable b(1.0);
+    CS::Variable c(2);
+    CS::Variable p(static_cast<void*>(&a));
+    // int and double
+    std::cout << (a + b).to_string() << std::endl;
+    std::cout << (a - b).to_string() << std::endl;
+    std::cout << (a * b).to_string() << std::endl;
+    std::cout << (a / b).to_string() << std::endl;
+    // int and int 
+    std::cout << (a + c).to_string() << std::endl;
+    // int and pointer
+    std::cout << (a + p).to_string() << std::endl;
+}
+
 int main()
 {
     //TestScanner();
-    TestParser();
+    //TestParser();
+    TestVariable();
     return 0;
 }

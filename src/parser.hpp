@@ -1,7 +1,8 @@
 #include <stack>
 
-#ifndef SCANNER
-#define SCANNER
+#define PARSER_H
+
+#ifndef SCANNER_H
 #include "scanner.hpp"
 #endif
 

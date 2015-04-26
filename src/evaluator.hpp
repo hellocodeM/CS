@@ -1,42 +1,21 @@
+#include <unordered_map>
 
-#ifndef SCANNER
-#define SCANNER
+#define EVALUATOR_H
+
+#ifndef SCANNER_H
 #include "scanner.hpp"
 #endif
 
-#ifndef PARSER
-#define PARSER
+#ifndef PARSER_H
 #include "parser.hpp"
 #endif
 
+#ifndef VARIABLE_H
+#include "variable.hpp"
+#endif
+
 namespace CS {
-
-union Value {
-    int i;
-    double d;
-    void* p;
-};
-
-struct Variable {
-    Value v;
-    int type_id;
-
-    string toString() {
-        switch (type_id) {
-            case 1:
-                return std::to_string(v.i);
-            case 2:
-                return std::to_string(v.v);
-            case 3:
-                return std::to_string(v.d);
-            case 4:
-                return std::to_string(v.p);
-            default:
-                return string();
-        }
-    }
-};
-
+    class Block;
     typedef std::unordered_map<std::string, Variable> Context;
 
 class Block {
@@ -76,19 +55,19 @@ class Evaluator {
                 if (tree->type_ < 10) {
                     /* variable statement */
                     return Statement(tree);
-                } else if {
+                } else if (tree->type_ == 14) {
                     /* assignment */
                     return Assignment(tree);
-                } else if {
+                } else if (tree->type_ == 54) {
                     /* function call */
                     return Call(tree);
-                } else if {
+                } else if (tree->type_ == 32) {
                     /* if block */
                     return IfBlock(tree);
-                } else if {
+                } else if (tree->type_ == 34) {
                     /* while block */
                     return WhileBlock(tree);
-                } else if {
+                } else if (tree->type_ == 35) {
                     /* for block */
                     return ForBlock(tree);
                 } else {
@@ -112,18 +91,13 @@ class Evaluator {
                     context_[id].v.i = 0;
                     res = id + " = 0";
                     break;
-                /* void */
-                case 2:
-                    context_[id].v = 0;
-                    res = id + " = 0";
-                    break;
                 /* double */
-                case 3:
+                case 2:
                     context_[id].d = 0.0;
                     res = id + " = 0.0";
                     break;
                 /* pointer */
-                case 4:
+                case 3:
                     context_[id].p = nullptr;
                     res = id + " = nullptr";
                     break;
@@ -134,6 +108,7 @@ class Evaluator {
         }
 
         string Assignment(SyntaxTree* tree) {
+            assert(tree->type_ == 14);
             string id = tree->left_->value_;
             SyntaxTree* expr = tree->right_;
             Variable value = Expression(expr);
@@ -182,19 +157,23 @@ class Evaluator {
         }
 
         string Call(SyntaxTree* tree) {
-
+            assert(tree->left_->type_ == 54);
+            string fun = tree->left_->value_;
+            
+            
         }
 
         string IfBlock(SyntaxTree* tree) {
-
+            assert(tree->type_ == 32);
         }
 
         string WhileBlock(SyntaxTree* tree) {
+            assert(tree->type_ == 34);
 
         }
 
         string ForBlock(SyntaxTree* tree) {
-
+            assert(tree->type_ == 45);
         }
 
         /* members */

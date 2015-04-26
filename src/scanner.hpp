@@ -6,6 +6,8 @@
 #include <cassert>
 #include <iostream>
 
+#define SCANNER_H
+
 namespace CS {
     using std::string;
 
@@ -16,9 +18,8 @@ namespace CS {
     TokenMap& kTypes() {
         static TokenMap types = {
             { "int", 1 },
-            { "void", 2 },
-            { "double", 3},
-            { "pointer", 4 }
+            { "double", 2 },
+            { "pointer", 3}
         };
         return types;
     }
