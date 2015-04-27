@@ -16,3 +16,6 @@ CS: println(a);
 res: 
 CS: exit
 ```
+
+# Others
+You could find something about this program in my blog: 

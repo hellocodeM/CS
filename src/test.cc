@@ -12,13 +12,13 @@ const char* GetSourceCode() {
 }
 
 void TestScanner() {
-    printf("scanner test:\n");
+    printf("------scanner test------\n");
     const char* code = GetSourceCode();
     CS::TokenList token_list = CS::Scanner::Scan(code);
     for (auto &i : token_list) {
         std::cout << i.first << " : " << i.second <<std::endl;
     }
-    printf("pass: scanner test\n");
+    printf("-----pass: scanner test------\n\n");
 }
 
 void DumpSyntaxTree(CS::SyntaxTree* root, int interval) {
@@ -39,17 +39,17 @@ void DumpSyntaxTree(CS::SyntaxTree* root, int interval) {
 }
 
 void TestParser() {
-    printf("parser test:\n");
+    printf("------parser test------\n");
     const char* code = GetSourceCode();
     CS::TokenList token_list = CS::Scanner::Scan(code);
     CS::Parser parser;
     CS::SyntaxTree* syntax_tree = parser.Parse(token_list);
     DumpSyntaxTree(syntax_tree, 0);
-    printf("pass: parser test\n");
+    printf("-----pass: parser test------\n\n");
 }
 
 void TestVariable() {
-    printf("variable test\n");
+    printf("------variable test------\n");
     CS::Variable a(1);
     CS::Variable b(1.0);
     CS::Variable c(2);
@@ -63,16 +63,21 @@ void TestVariable() {
     std::cout << (a + c).to_string() << std::endl;
     // int and pointer
     std::cout << (a + p).to_string() << std::endl;
-    printf("pass: variable test\n");
+    printf("-----pass: variable test------\n\n");
 }
 
 void TestEvaluator() {
-    printf("evaluator test\n");
+    printf("------evaluator test------\n");
     CS::Evaluator eval;
     std::cout << eval.Evaluate("int a;\n") << std::endl;
     std::cout << eval.Evaluate("a = 1+1;\n") << std::endl;
     std::cout << eval.Evaluate("println(a);\n") << std::endl;
-    printf("pass: evaluator test\n");
+    printf("-----pass: evaluator test------\n\n");
+}
+
+void TestEncoder() {
+    printf("------encoder test------\n");
+    printf("-----pass: encoder test------\n\n");
 }
 
 int main()
@@ -81,6 +86,6 @@ int main()
     TestParser();
     //TestVariable();
     TestEvaluator();
-    printf("passed all test!\n");
+    printf("------pass all test !------\n\n");
     return 0;
 }
