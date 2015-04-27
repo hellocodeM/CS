@@ -1,3 +1,10 @@
+/**
+ * 
+ * An interpreter working on the syntaxtree without any optimization.
+ * An unsolved problem is function call: right now I manually 
+ * register some functions, but actually it's not a elegant solution.
+ */
+
 #include <unordered_map>
 
 #define EVALUATOR_H
