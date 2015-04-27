@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <memory>
 
 #include "scanner.hpp"
 #include "parser.hpp"
@@ -7,6 +8,7 @@
 #include "evaluator.hpp"
 #include "opcode.hpp"
 #include "encoder.hpp"
+
 
 const char* GetSourceCode() {
     const char* code = "int a;\na = 1 + 1;\n println(a);\n";
@@ -41,12 +43,13 @@ void DumpSyntaxTree(CS::SyntaxTree* root, int interval) {
 }
 
 void TestParser() {
+    using namespace CS;
     printf("------parser test------\n");
     const char* code = GetSourceCode();
     CS::TokenList token_list = CS::Scanner::Scan(code);
     CS::Parser parser;
-    CS::SyntaxTree* syntax_tree = parser.Parse(token_list);
-    DumpSyntaxTree(syntax_tree, 0);
+    std::shared_ptr<SyntaxTree> syntax_tree(parser.Parse(token_list));
+    DumpSyntaxTree(syntax_tree.get(), 0);
     printf("-----pass: parser test------\n\n");
 }
 
@@ -126,8 +129,8 @@ void TestEncoder() {
     Encoder::Encoder encoder;
 
     TokenList token_list = Scanner::Scan(code);
-    SyntaxTree* syntax_tree = parser.Parse(token_list);
-    auto instruction_symbol = encoder.Encode(syntax_tree);
+    std::shared_ptr<SyntaxTree> syntax_tree(parser.Parse(token_list));
+    auto instruction_symbol = encoder.Encode(syntax_tree.get());
     
     /* instructions */
     for (long long i : *(instruction_symbol.first)) {
@@ -145,10 +148,10 @@ void TestEncoder() {
 int main()
 {
     //TestScanner();
-    //TestParser();
+    TestParser();
     //TestVariable();
-    //TestEvaluator();
-    //TestOpCode();
+    TestEvaluator();
+    TestOpCode();
     TestStackModel();
     TestEncoder();
     printf("------pass all test !------\n\n");

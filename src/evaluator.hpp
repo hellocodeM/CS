@@ -6,6 +6,7 @@
  */
 
 #include <unordered_map>
+#include <memory>
 
 #define EVALUATOR_H
 
@@ -26,6 +27,7 @@
 #endif
 
 namespace CS {
+    using std::shared_ptr;
     typedef std::unordered_map<std::string, Variable> Context;
 class Block {
     public:
@@ -76,8 +78,8 @@ class Evaluator {
 
         string Evaluate(const char* code) {
             TokenList&& token_list = scanner_.Scan(code);
-            SyntaxTree* tree = parser_.Parse(token_list);
-            return BlockEvaluate(tree, global_context_);
+            shared_ptr<SyntaxTree> tree(parser_.Parse(token_list));
+            return BlockEvaluate(tree.get(), global_context_);
         }
 
     private:
