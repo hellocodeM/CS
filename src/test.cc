@@ -5,6 +5,7 @@
 #include "parser.hpp"
 #include "variable.hpp"
 #include "evaluator.hpp"
+#include "opcode.hpp"
 
 const char* GetSourceCode() {
     const char* code = "int a;\na = 1 + 1;\n println(a);\n";
@@ -67,7 +68,7 @@ void TestVariable() {
 }
 
 void TestEvaluator() {
-    printf("------evaluator test------\n");
+    printf("-----evaluator test------\n");
     CS::Evaluator eval;
     std::cout << eval.Evaluate("int a;\n") << std::endl;
     std::cout << eval.Evaluate("a = 1+1;\n") << std::endl;
@@ -75,17 +76,55 @@ void TestEvaluator() {
     printf("-----pass: evaluator test------\n\n");
 }
 
+void TestOpCode() {
+    printf("-----opcode test------\n");
+    using namespace CS::OpCode;
+    int op = GetOpCode("push");
+    int val = 1;
+    long long i = MakeOpCode(op, val);
+    printf("%016llx\n", i);
+    assert(i == 0x0000000100000001);
+    auto instruction = SplitOpCode(i);
+    assert(instruction.first == GetOpCode("push"));
+    assert(instruction.second == 1);
+    printf("-----pass: opcode test------\n\n");
+}
+
 void TestEncoder() {
-    printf("------encoder test------\n");
+    printf("-----encoder test------\n");
     printf("-----pass: encoder test------\n\n");
+}
+
+void TestStackModel() {
+    printf("-----stack model test-----\n");
+    
+    /* int a; a = 1 + 1; println(a); */
+    using namespace CS::OpCode;
+    StackModel stack;
+    stack.Action("push", 0);
+    stack.Action("push", 1);
+    stack.Action("push", 1);
+    stack.Action("add");
+    stack.Action("mov", 0);
+    stack.Action("pop");
+    stack.Action("call", "pritnln");
+    auto res = stack.Export(); 
+    InstructionTable instructions = *(res.first);
+    SymbolTable symbols = *(res.second);
+    for (long long i : instructions) {
+        printf("%016llx\n", i);
+    }
+    printf("-----pass: stack model test-----\n\n");
 }
 
 int main()
 {
-    TestScanner();
-    TestParser();
+    //TestScanner();
+    //TestParser();
     //TestVariable();
-    TestEvaluator();
+    //TestEvaluator();
+    //TestOpCode();
+    TestStackModel();
     printf("------pass all test !------\n\n");
     return 0;
 }

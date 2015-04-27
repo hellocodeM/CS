@@ -1,73 +1,94 @@
+#include <unordered_map>
+#include <vector>
+#include <string>
 
 #define OPCODE_H
 
 namespace CS {
 
-class Instruction {
-    public:
+    namespace OpCode {
+        using std::string;
+        using std::vector;
+        using std::unordered_map;
 
-    private:
-};
+        typedef unordered_map<string, int> OpCodeTable;
+        typedef unordered_map<string, int> SymbolTable; // store identifer and index
+        typedef vector<long long> InstructionTable;
 
-class StackModel {
-    public:
-        StackModel() {}
 
-        StackModel(const vector<Instruction>& instructions) {
-
+        static int GetOpCode(const string& op) {
+            return GetOpCode(op.c_str());
         }
 
-        OpCode Dump() const {
+        static int GetOpCode(const char* op) {
+            static OpCodeTable opcodes = {
 
+                /* stack-oriented */
+                { "push", 1 },
+                { "pop",  2 },
+                { "mov",  3 },
+                { "top",  4 },
+                { "load", 5 },
+
+                /* numeric */
+                { "add", 20 },
+                { "sub", 21 },
+                { "mul", 22 },
+                { "div", 23 },
+
+                /* jump */
+                { "call",30 },
+                { "jmp", 31 }
+            };
+            return opcodes[op];
         }
 
-        void Push(int i) {
-
+        static long long MakeOpCode(int op, int address) {
+            return (static_cast<long long>(op) << 32) ^ 
+                static_cast<long long>(address);
         }
 
-        void Pop() {
-
+        static long long MakeOpCode(const char* op, int address) {
+            return MakeOpCode(GetOpCode(op), address);
         }
 
-        void Top() {
-
-        }
-        
-
-        void Mov(int dst, int src) {
+        static std::pair<int, int> SplitOpCode(long long instruction) {
+            return std::make_pair(
+                    static_cast<int>(instruction >> 32),
+                    static_cast<int>(instruction));
         }
 
-        void Assign(int dst, int val) {
+        class StackModel {
+            public:
+                StackModel() {}
 
-        }
+                ~StackModel() {}
 
-        void Call() {
+                std::pair<InstructionTable*, SymbolTable*>
+                Export() {
+                    return std::make_pair(&instructions_, &symbol_table_);
+                }
+                void Action(const string& op, int address = 0) {
+                    Action(op.c_str(), address);
+                }
 
-        }
+                void Action(const char* op, int address = 0) {
+                    instructions_.push_back(MakeOpCode(op, address));
+                }
 
-        /* numeric operation */
-        void Add() {
+                void Action(const string& op, const string& id) {
+                    Action(op.data(), id.data());
+                }
 
-        }
-        
-        void Sub() {
+                void Action(const char* op, const char* id) {
+                    int index = symbol_table_.size() + 1;
+                    symbol_table_.emplace(op, index);
+                    instructions_.push_back(MakeOpCode(op, index));
+                }
 
-        }
-
-        void Mul() {
-
-        }
-
-        void Div() {
-
-        }
-
-        void Mod() {
-
-        }
-        
-
-    private:
-        vector<Instruction>
-};
+            private:
+                InstructionTable instructions_;
+                SymbolTable symbol_table_;
+        };
+    }
 }
