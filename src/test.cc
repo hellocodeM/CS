@@ -6,6 +6,7 @@
 #include "variable.hpp"
 #include "evaluator.hpp"
 #include "opcode.hpp"
+#include "encoder.hpp"
 
 const char* GetSourceCode() {
     const char* code = "int a;\na = 1 + 1;\n println(a);\n";
@@ -90,10 +91,6 @@ void TestOpCode() {
     printf("-----pass: opcode test------\n\n");
 }
 
-void TestEncoder() {
-    printf("-----encoder test------\n");
-    printf("-----pass: encoder test------\n\n");
-}
 
 void TestStackModel() {
     printf("-----stack model test-----\n");
@@ -101,13 +98,15 @@ void TestStackModel() {
     /* int a; a = 1 + 1; println(a); */
     using namespace CS::OpCode;
     StackModel stack;
-    stack.Action("push", 0);
+    stack.Action("alloc", 4);
     stack.Action("push", 1);
     stack.Action("push", 1);
     stack.Action("add");
+    stack.Action("pop");
     stack.Action("mov", 0);
     stack.Action("pop");
-    stack.Action("call", "pritnln");
+    stack.Action("load", 0);
+    stack.Action("call", "println");
     auto res = stack.Export(); 
     InstructionTable instructions = *(res.first);
     SymbolTable symbols = *(res.second);
@@ -115,6 +114,32 @@ void TestStackModel() {
         printf("%016llx\n", i);
     }
     printf("-----pass: stack model test-----\n\n");
+}
+
+void TestEncoder() {
+    printf("-----encoder test------\n");
+
+    using namespace CS;
+    
+    const char* code = GetSourceCode();
+    Parser parser;
+    Encoder::Encoder encoder;
+
+    TokenList token_list = Scanner::Scan(code);
+    SyntaxTree* syntax_tree = parser.Parse(token_list);
+    auto instruction_symbol = encoder.Encode(syntax_tree);
+    
+    /* instructions */
+    for (long long i : *(instruction_symbol.first)) {
+        printf("%016llx\n", i);
+    }
+
+    /* symbols */
+    for (auto i: *(instruction_symbol.second)) {
+        printf("%s -> %d\n", i.first.data(), i.second);
+    }
+    
+    printf("-----pass: encoder test------\n\n");
 }
 
 int main()
@@ -125,6 +150,7 @@ int main()
     //TestEvaluator();
     //TestOpCode();
     TestStackModel();
+    TestEncoder();
     printf("------pass all test !------\n\n");
     return 0;
 }

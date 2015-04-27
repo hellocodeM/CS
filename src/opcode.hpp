@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <cstring>
 
 #define OPCODE_H
 
@@ -29,8 +30,9 @@ namespace CS {
                 { "mov",  3 },
                 { "top",  4 },
                 { "load", 5 },
+                { "alloc", 6},
 
-                /* numeric */
+                /* numeric, don't need address*/
                 { "add", 20 },
                 { "sub", 21 },
                 { "mul", 22 },
@@ -60,7 +62,8 @@ namespace CS {
 
         class StackModel {
             public:
-                StackModel() {}
+                StackModel(): instructions_(), symbol_table_(), stack_top_(0) {
+                }
 
                 ~StackModel() {}
 
@@ -68,27 +71,41 @@ namespace CS {
                 Export() {
                     return std::make_pair(&instructions_, &symbol_table_);
                 }
-                void Action(const string& op, int address = 0) {
-                    Action(op.c_str(), address);
+
+                int Action(const string& op, int address = 0) {
+                    return Action(op.c_str(), address);
                 }
 
-                void Action(const char* op, int address = 0) {
+                int Action(const char* op, int address = 0) {
                     instructions_.push_back(MakeOpCode(op, address));
+                    if (strcmp(op, "alloc")) {
+                        stack_top_ += address;
+                    } else if (strcmp(op, "push")) {
+                        stack_top_  += 4;
+                    } else if (strcmp(op, "pop")) {
+                        stack_top_ -= 4;
+                    } else if (strcmp(op, "load")) {
+                        stack_top_ += 4;
+                    }
+                    return stack_top_;
                 }
 
-                void Action(const string& op, const string& id) {
-                    Action(op.data(), id.data());
+                /* function call*/
+                int Action(const string& op, const string& id) {
+                    return Action(op.data(), id.data());
                 }
 
-                void Action(const char* op, const char* id) {
+                int Action(const char* op, const char* id) {
                     int index = symbol_table_.size() + 1;
-                    symbol_table_.emplace(op, index);
+                    symbol_table_.emplace(id, index);
                     instructions_.push_back(MakeOpCode(op, index));
+                    return 0;
                 }
 
             private:
                 InstructionTable instructions_;
                 SymbolTable symbol_table_;
+                int stack_top_;
         };
     }
 }
