@@ -71,7 +71,7 @@ namespace CS {
         };
         class VM {
             public:
-                VM(): sym_tbl_(), ins_tbl_(), pc_(0) {
+                VM(): sym_tbl_(), ins_tbl_(), pc_(0), frame_p_(0) {
                 }
                 ~VM() {}
 
@@ -137,10 +137,14 @@ namespace CS {
                         /* function call */
                         case 30:
                             /* have not finish this part */
-                            puts("call");
+                            frame_p_ = pc_;
+                            // pc_ = val;
                             break;
                         case 31:
                             pc_ = val;
+                            break;
+                        case 32:
+                            pc_ = frame_p_;
                             break;
                         default:
                             puts("unknown opcode");
@@ -152,6 +156,7 @@ namespace CS {
                 SymbolTable sym_tbl_;
                 InstructionTable ins_tbl_;
                 int pc_;
+                int frame_p_;
                 OpStack stack_;
         };
     }

@@ -39,7 +39,8 @@ namespace CS {
 
                 /* jump */
                 { "call",30 },
-                { "jmp", 31 }
+                { "jmp", 31 },
+                { "ret", 32 }
             };
             return opcodes[op];
         }
