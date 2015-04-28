@@ -40,18 +40,9 @@ namespace CS {
                     }
 
                 ~TokenNode() {
-                    if (left_ != nullptr) {
-                        left_->~TokenNode();
-                        delete left_;
-                    }
-                    if (right_ != nullptr) {
-                        right_->~TokenNode();
-                        delete right_;
-                    }
-                    if (next_ != nullptr) {
-                        next_->~TokenNode();
-                        delete next_;
-                    }
+                    if (left_) delete left_;
+                    if (right_) delete right_;
+                    if (next_) delete next_;
                 }
 
                 /* operations */
@@ -92,8 +83,8 @@ namespace CS {
                 SyntaxTree* Parse(TokenList& token_list) {
                     token_list_ = &token_list;
                     token_parsed_ = 0;
-                    SyntaxTree root;
-                    TokenNode* cursor = &root;
+                    SyntaxTree guard;
+                    TokenNode* cursor = &guard;
 
                     while (HasNext()) {
                         int position = Position();
@@ -107,7 +98,11 @@ namespace CS {
                         SkipToken(";");
                         cursor = cursor->next_;
                     }
-                    return root.next_;
+
+                    /* to protect the tree be destructed by the destruction of 'guard' */
+                    TokenNode* res = guard.next_;
+                    guard.next_ = nullptr;
+                    return res;
                 }
 
             private:
