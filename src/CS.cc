@@ -1,3 +1,5 @@
+/* fire release mode, without some memory leak checking */
+#define NDEBUG 
 
 #include <iostream>
 #include <unordered_map>

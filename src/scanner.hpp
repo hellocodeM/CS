@@ -10,64 +10,64 @@
 #define SCANNER_H
 
 namespace CS {
-    using std::string;
+        using std::string;
 
-    typedef std::pair<string, int> TokenPair;
-    typedef std::vector<TokenPair> TokenList;
-    typedef std::unordered_map<string, int> TokenMap;
+        typedef std::pair<string, int> TokenPair;
+        typedef std::vector<TokenPair> TokenList;
+        typedef std::unordered_map<string, int> TokenMap;
 
-    TokenMap& kTypes() {
-        static TokenMap types = {
-            { "int", 1 },
-            { "double", 2 },
-            { "pointer", 3}
-        };
-        return types;
-    }
+        TokenMap& kTypes() {
+            static TokenMap types = {
+                { "int", 1 },
+                { "double", 2 },
+                { "pointer", 3}
+            };
+            return types;
+        }
 
-    TokenMap& kOperators() {
-        static TokenMap operators = {
-            { "+", 10 },
-            { "-", 11 },
-            { "*", 12 },
-            { "/", 13 },
-            { "=", 14 },
-            { "==", 15 },
-            { "!=", 16 },
-            { "\"", 17 },
-            { "(", 18 },
-            { ")", 19 },
-            { ";", 20 }
-        };
-        return operators;
-    }
+        TokenMap& kOperators() {
+            static TokenMap operators = {
+                { "+", 10 },
+                { "-", 11 },
+                { "*", 12 },
+                { "/", 13 },
+                { "=", 14 },
+                { "==", 15 },
+                { "!=", 16 },
+                { "\"", 17 },
+                { "(", 18 },
+                { ")", 19 },
+                { ";", 20 }
+            };
+            return operators;
+        }
 
-    TokenMap& kKeywords() {
-        static TokenMap keywords = {
-            { "return", 31 },
-            { "if", 32 },
-            { "else", 33 },
-            { "while", 34 },
-            { "for", 35 },
-            { "int", 36 },
-            { "double", 37}
-        };
-        return keywords;
-    }
+        TokenMap& kKeywords() {
+            static TokenMap keywords = {
+                { "return", 31 },
+                { "if", 32 },
+                { "else", 33 },
+                { "while", 34 },
+                { "for", 35 },
+                { "int", 36 },
+                { "double", 37}
+            };
+            return keywords;
+        }
 
-    TokenMap& kLiterals() {
-        static TokenMap literals = {
-            { "number_type", 51 },
-            { "string_type", 52 },
-            { "identifier_type", 53 },
-            { "call_type", 54 }
-        };
-        return literals;
-    }
+        TokenMap& kLiterals() {
+            static TokenMap literals = {
+                { "number_type", 51 },
+                { "string_type", 52 },
+                { "identifier_type", 53 },
+                { "call_type", 54 }
+            };
+            return literals;
+        }
 
-    class Scanner {
+        class Scanner {
             enum State { START, NUMBER, PUNCT, LETTER, DONE };
-        public:
+            public:
             Scanner() {}
 
 
@@ -83,7 +83,7 @@ namespace CS {
 
                 while (*s != '\0') {
                     ch = *s++;
-            begin:
+begin:
                     switch (state) {
                         case START:
                             token += ch;
@@ -187,6 +187,6 @@ namespace CS {
 
             }
 
-        private:
-    };
+            private:
+        };
 }

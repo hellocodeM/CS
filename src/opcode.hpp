@@ -17,11 +17,11 @@ namespace CS {
         typedef vector<long long> InstructionTable;
 
 
-        static int GetOpCode(const string& op) {
+        int GetOpCode(const string& op) {
             return GetOpCode(op.c_str());
         }
 
-        static int GetOpCode(const char* op) {
+        int GetOpCode(const char* op) {
             static OpCodeTable opcodes = {
 
                 /* stack-oriented */
@@ -62,14 +62,22 @@ namespace CS {
 
         class StackModel {
             public:
-                StackModel(): instructions_(), symbol_table_(), stack_top_(0) {
+                StackModel(): stack_top_(0) {
+                    instructions_ = new InstructionTable();
+                    symbol_table_ = new SymbolTable();
                 }
 
-                ~StackModel() {}
+                ~StackModel() {
+#ifndef NDEBUG
+                    printf("destruct stackmodel\n");
+#endif
+                    delete instructions_;
+                    delete symbol_table_;
+                }
 
                 std::pair<InstructionTable*, SymbolTable*>
                 Export() {
-                    return std::make_pair(&instructions_, &symbol_table_);
+                    return std::make_pair(instructions_, symbol_table_);
                 }
 
                 int Action(const string& op, int address = 0) {
@@ -77,7 +85,7 @@ namespace CS {
                 }
 
                 int Action(const char* op, int address = 0) {
-                    instructions_.push_back(MakeOpCode(op, address));
+                    instructions_->push_back(MakeOpCode(op, address));
                     if (strcmp(op, "alloc")) {
                         stack_top_ += address;
                     } else if (strcmp(op, "push")) {
@@ -96,15 +104,15 @@ namespace CS {
                 }
 
                 int Action(const char* op, const char* id) {
-                    int index = symbol_table_.size() + 1;
-                    symbol_table_.emplace(id, index);
-                    instructions_.push_back(MakeOpCode(op, index));
+                    int index = symbol_table_->size() + 1;
+                    symbol_table_->emplace(id, index);
+                    instructions_->push_back(MakeOpCode(op, index));
                     return 0;
                 }
 
             private:
-                InstructionTable instructions_;
-                SymbolTable symbol_table_;
+                InstructionTable* instructions_;
+                SymbolTable* symbol_table_;
                 int stack_top_;
         };
     }

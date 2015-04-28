@@ -8,7 +8,10 @@
 #include "evaluator.hpp"
 #include "opcode.hpp"
 #include "encoder.hpp"
+#include "serializer.hpp"
 
+
+using namespace CS;
 
 const char* GetSourceCode() {
     const char* code = "int a;\na = 1 + 1;\n println(a);\n";
@@ -66,8 +69,6 @@ void TestVariable() {
     std::cout << (a / b).to_string() << std::endl;
     // int and int 
     std::cout << (a + c).to_string() << std::endl;
-    // int and pointer
-    std::cout << (a + p).to_string() << std::endl;
     printf("-----pass: variable test------\n\n");
 }
 
@@ -145,15 +146,44 @@ void TestEncoder() {
     printf("-----pass: encoder test------\n\n");
 }
 
+void TestSerializer() {
+    printf("-----serializer test-----\n");
+    using namespace CS;
+    using namespace OpCode;
+    
+    Parser parser;
+    Encoder::Encoder encoder;
+    
+    const char* code = GetSourceCode();
+    TokenList token_list = Scanner::Scan(code);
+    std::shared_ptr<SyntaxTree> syntax_tree(parser.Parse(token_list));
+    auto instruction_symbol = encoder.Encode(syntax_tree.get());
+    auto inst = instruction_symbol.first;
+    auto symb = instruction_symbol.second;
+    /* serialize */
+    Serializer::Serialize(instruction_symbol, "./test.oc");
+    
+    /* deserialize */
+    auto deserialized = Serializer::Deserialize("./test.oc");
+    auto inst_d = deserialized.first;
+    auto symb_d = deserialized.second;
+
+    assert(*inst == *inst_d);
+    assert(*symb == *symb_d);
+    remove("./test.oc");
+    printf("-----pass: serializer test-----\n\n");
+}
+
 int main()
 {
-    //TestScanner();
+    TestScanner();
     TestParser();
-    //TestVariable();
+    TestVariable();
     TestEvaluator();
     TestOpCode();
     TestStackModel();
     TestEncoder();
-    printf("------pass all test !------\n\n");
+    TestSerializer();
+    printf("\n------pass all test !------\n\n");
     return 0;
 }

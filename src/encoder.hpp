@@ -16,16 +16,19 @@
 #endif
 
 namespace CS {
-
     namespace Encoder {
-        using namespace OpCode;
+        using OpCode::InstructionTable;
+        using OpCode::SymbolTable;
+        using OpCode::StackModel;
 
         typedef std::unordered_map<std::string, int> Context;
 
         class Encoder {
 
             public:
-                Encoder() {}
+                Encoder(): stack_() {}
+
+                ~Encoder() {}
 
                 std::pair<InstructionTable*, SymbolTable*>
                 Encode(SyntaxTree* syntax_tree) {

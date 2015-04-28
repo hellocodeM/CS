@@ -40,6 +40,9 @@ namespace CS {
                     }
 
                 ~TokenNode() {
+#ifndef NDEBUG
+                    printf("destruct tokennode\n");
+#endif
                     if (left_) delete left_;
                     if (right_) delete right_;
                     if (next_) delete next_;
