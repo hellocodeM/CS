@@ -28,9 +28,8 @@ namespace CS {
                 { "push", 1 },
                 { "pop",  2 },
                 { "mov",  3 },
-                { "top",  4 },
-                { "load", 5 },
-                { "alloc", 6},
+                { "load", 4 },
+                { "alloc", 5},
 
                 /* numeric, don't need address*/
                 { "add", 20 },

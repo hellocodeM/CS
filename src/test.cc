@@ -9,6 +9,7 @@
 #include "opcode.hpp"
 #include "encoder.hpp"
 #include "serializer.hpp"
+#include "vm.hpp"
 
 
 using namespace CS;
@@ -153,8 +154,8 @@ void TestSerializer() {
     
     Parser parser;
     Encoder::Encoder encoder;
-    
     const char* code = GetSourceCode();
+
     TokenList token_list = Scanner::Scan(code);
     std::shared_ptr<SyntaxTree> syntax_tree(parser.Parse(token_list));
     auto instruction_symbol = encoder.Encode(syntax_tree.get());
@@ -174,6 +175,28 @@ void TestSerializer() {
     printf("-----pass: serializer test-----\n\n");
 }
 
+void TestVM() {
+    printf("-----vm test-----\n");
+    using namespace CS;
+    using namespace OpCode;
+
+    Parser parser;
+    Encoder::Encoder encoder;
+    VM::VM vm;
+    const char* code = GetSourceCode();
+    
+    TokenList token_list = Scanner::Scan(code);
+    std::shared_ptr<SyntaxTree> syntax_tree(parser.Parse(token_list));
+    auto instruction_symbol = encoder.Encode(syntax_tree.get());
+    InstructionTable* inst = instruction_symbol.first;
+    SymbolTable* symb = instruction_symbol.second;
+
+    vm.LoadSymbolTable(*symb);
+    vm.Execute(*inst);
+
+    printf("-----pass: vm test-----\n\n");
+}
+
 int main()
 {
     TestScanner();
@@ -184,6 +207,7 @@ int main()
     TestStackModel();
     TestEncoder();
     TestSerializer();
+    TestVM();
     printf("\n------pass all test !------\n\n");
     return 0;
 }
