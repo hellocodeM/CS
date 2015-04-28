@@ -37,6 +37,10 @@ namespace CS {
                     return top_;
                 }
 
+                void ReSize(int new_size) {
+                    top_ = new_size;
+                }
+
                 int& Top() {
                     return data_[top_];
                 }
@@ -137,14 +141,16 @@ namespace CS {
                         /* function call */
                         case 30:
                             /* have not finish this part */
-                            frame_p_ = pc_;
-                            // pc_ = val;
+                            stack_.Push(pc_);
+                            frame_p_ = stack_.Size();
+                            //pc_ = fun_tbl_[val];
                             break;
                         case 31:
-                            pc_ = val;
+                            pc_ = stack_[frame_p_] + val;
                             break;
                         case 32:
-                            pc_ = frame_p_;
+                            pc_ = stack_[frame_p_];
+                            stack_.ReSize(frame_p_);
                             break;
                         default:
                             puts("unknown opcode");
@@ -156,7 +162,7 @@ namespace CS {
                 SymbolTable sym_tbl_;
                 InstructionTable ins_tbl_;
                 int pc_;
-                int frame_p_;
+                int frame_p_; // point to the frame
                 OpStack stack_;
         };
     }

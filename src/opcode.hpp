@@ -106,6 +106,7 @@ namespace CS {
                 int Action(const char* op, const char* id) {
                     int index = symbol_table_->size() + 1;
                     symbol_table_->emplace(id, index);
+                    //instructions_->push_back(MakeOpCode("reserve", 0));
                     instructions_->push_back(MakeOpCode(op, index));
                     return 0;
                 }
