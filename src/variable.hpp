@@ -1,8 +1,7 @@
-#define VARIABLE_H
+#ifndef VARIABLE_HPP
+#define VARIABLE_HPP
 
-#ifndef UTIL_H
 #include "util.hpp"
-#endif
 
 namespace CS {
 
@@ -155,5 +154,5 @@ class Variable {
     private:
         Variable& self;
 };
-
-}
+} //end of namespace CS
+#endif

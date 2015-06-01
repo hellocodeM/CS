@@ -3,13 +3,11 @@
  * And deserialize it to instructions. The instructions are defined at opcode.hpp.
  */
 
+#ifndef SERIALIZER_HPP
+#define SERIALIZER_HPP
 #include <cstdio>
 
-#define SERIALIZER_H
-
-#ifndef OPCODE_H
 #include "opcode.hpp"
-#endif
 
 namespace CS {
     namespace Serializer {
@@ -64,3 +62,4 @@ namespace CS {
             }
     }
 }
+#endif

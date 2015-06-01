@@ -1,7 +1,9 @@
+#ifndef FUNCTION_HPP
+#define FUNCTION_HPP
 #include <cstdio>
 #include <unordered_map>
 
-#define FUNCTION_H
+
 
 namespace CS {
     typedef void(*FunPtr)(void);
@@ -17,3 +19,4 @@ namespace CS {
         }
     }
 }
+#endif

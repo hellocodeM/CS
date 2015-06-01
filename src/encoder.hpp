@@ -2,18 +2,13 @@
  * Convert a syntax tree to instructions, which could be execute by a virtual machine using stack model.
  */
 
+#ifndef ENCODER_HPP
+#define ENCODER_HPP
 #include <unordered_map>
 #include <string>
 
-#define ENCODER_H
-
-#ifndef PARSER_H
 #include "parser.hpp"
-#endif
-
-#ifndef OPCODE_H
 #include "opcode.hpp"
-#endif
 
 namespace CS {
     namespace Encoder {
@@ -143,3 +138,4 @@ namespace CS {
         };
     }
 }
+#endif

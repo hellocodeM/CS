@@ -5,26 +5,15 @@
  * register some functions, but actually it's not a elegant solution.
  */
 
+#ifndef EVALUATOR_HPP
+#define EVALUATOR_HPP
 #include <unordered_map>
 #include <memory>
 
-#define EVALUATOR_H
-
-#ifndef SCANNER_H
 #include "scanner.hpp"
-#endif
-
-#ifndef PARSER_H
 #include "parser.hpp"
-#endif
-
-#ifndef VARIABLE_H
 #include "variable.hpp"
-#endif
-
-#ifndef FUNCTION_H
 #include "function.hpp"
-#endif
 
 namespace CS {
     using std::shared_ptr;
@@ -222,3 +211,4 @@ class Evaluator {
         Block global_context_;
 };
 }
+#endif

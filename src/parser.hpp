@@ -1,12 +1,9 @@
+#ifndef PARSER_HPP
+#define PARSER_HPP
 #include <stack>
 #include <memory>
 
-#define PARSER_H
-
-#ifndef SCANNER_H
 #include "scanner.hpp"
-#endif
-
 #include "util.hpp"
 
 namespace CS {
@@ -250,6 +247,8 @@ namespace CS {
                         default:
                             assert(false);
                     }
+                    /* impossibale */
+                    return -1;
                 }
 
                 // main force
@@ -407,3 +406,4 @@ end:
                 int token_parsed_;
         };
 }
+#endif

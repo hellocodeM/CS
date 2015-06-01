@@ -1,3 +1,5 @@
+#ifndef SCANNER_HPP
+#define SCANNER_HPP
 #include <string>
 #include <vector>
 #include <map>
@@ -6,8 +8,6 @@
 #include <cassert>
 #include <iostream>
 #include <unordered_map>
-
-#define SCANNER_H
 
 namespace CS {
         using std::string;
@@ -190,3 +190,4 @@ begin:
             private:
         };
 }
+#endif

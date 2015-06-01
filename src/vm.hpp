@@ -5,15 +5,13 @@
  * After all, this is just a toy, not a product. The purpose I wrote it is to learn the mechanism of compiler and virtual machine.
  */
 
-#define VM_H
-
+#ifndef VM_HPP
+#define VM_HPP
 #include <cassert>
 #include <algorithm>
 #include <iterator>
 
-#ifndef OPCODE_H
 #include "opcode.hpp"
-#endif
 
 namespace CS {
     namespace VM {
@@ -167,3 +165,4 @@ namespace CS {
         };
     }
 }
+#endif

@@ -1,9 +1,9 @@
+#ifndef OPCODE_HPP
+#define OPCODE_HPP
 #include <unordered_map>
 #include <vector>
 #include <string>
 #include <cstring>
-
-#define OPCODE_H
 
 namespace CS {
 
@@ -118,3 +118,4 @@ namespace CS {
         };
     }
 }
+#endif

@@ -1,10 +1,9 @@
+#ifndef UTIL_HPP
+#define UTIL_HPP
 #include <string>
 #include <cstdio>
 
-#define UTIL_H
-#ifndef SCANNER_H
 #include "scanner.hpp"
-#endif
 
 namespace CS {
 
@@ -26,6 +25,8 @@ namespace CS {
         if (literals.find(key) != literals.end())
             return literals[key];
         assert(false);
+        return -1;
     }
 
 }
+#endif
