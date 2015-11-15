@@ -1,5 +1,5 @@
 # CS
-A toy-like shell, using c++ syntax. Only support part of characteristics.
+A toy compiler, with a vm backend.
 
 I wrote this project just for fun, please don't use it in real work.
 
@@ -18,4 +18,4 @@ CS: exit
 ```
 
 # Others
-You could find something about this program in my blog: 
+You could find something about this program in my blog: [HelloCode](http://wanghuanming.com)
